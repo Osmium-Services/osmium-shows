@@ -1,0 +1,58 @@
+{
+    "id": "shows",
+    "name": "Shows",
+    "version": "1.0.0",
+    "description": "Curated trade show/event listings with postcode geocoding and logo upload",
+    "author": {
+        "name": "Gavin Cox"
+    },
+    "license": "proprietary",
+
+    "requires": {
+        "osmium": ">=1.0.0",
+        "php": ">=8.1",
+        "services": ["geocoder"]
+    },
+
+    "autoload": [
+        "models"
+    ],
+
+    "migrations": "migrations/",
+
+    "admin": {
+        "menu": {
+            "section": "Content",
+            "items": [
+                {
+                    "id": "shows",
+                    "label": "Shows",
+                    "icon": "bx bx-calendar-event",
+                    "route": "admin/shows",
+                    "activePattern": "admin/shows*",
+                    "role": null
+                }
+            ]
+        },
+        "routes": {
+            "admin/shows": {
+                "controller": "controllers/ShowsController.php",
+                "class": "Osmium\\Services\\Shows\\Controllers\\ShowsController",
+                "method": "index",
+                "title": "Shows"
+            },
+            "admin/shows/action": {
+                "controller": "controllers/ShowsController.php",
+                "class": "Osmium\\Services\\Shows\\Controllers\\ShowsController",
+                "method": "action"
+            }
+        },
+        "assets": [
+            "assets/shows.js"
+        ]
+    },
+
+    "setup": {
+        "postInstallNote": "Public listing consumption (e.g. a /shows/ page) isn't included - wire your own page to call the Show model's listUpcoming()/listPast() methods."
+    }
+}
