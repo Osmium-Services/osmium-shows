@@ -1,8 +1,9 @@
 {
     "id": "shows",
     "name": "Shows",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Curated trade show/event listings with postcode geocoding and logo upload",
+    "category": "content",
     "author": {
         "name": "Gavin Cox"
     },
