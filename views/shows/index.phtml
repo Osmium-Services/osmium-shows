@@ -277,7 +277,7 @@
     </div>
 </div>
 
-<script>
+<script nonce="<?= $cspNonce ?? '' ?>">
     window.ShowsConfig = {
         basePath: adminBasePath,
         venuePostcodes: <?= \json_encode($admin['venues']) ?>

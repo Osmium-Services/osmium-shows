@@ -1,7 +1,7 @@
 {
     "id": "osmium-shows",
     "name": "Osmium Shows",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "description": "Curated trade show/event listings with postcode geocoding and logo upload",
     "category": "content",
     "author": {
