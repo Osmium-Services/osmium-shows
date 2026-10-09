@@ -1,7 +1,7 @@
 {
     "id": "osmium-shows",
     "name": "Osmium Shows",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "Curated trade show/event listings with postcode geocoding and logo upload",
     "category": "content",
     "author": {
@@ -29,6 +29,7 @@
                     "id": "shows",
                     "label": "Shows",
                     "icon": "bx bx-calendar-event",
+                    "placement": "top",
                     "route": "admin/shows",
                     "activePattern": "admin/shows*",
                     "role": null
