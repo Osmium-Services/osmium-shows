@@ -64,7 +64,6 @@ return [
         'order' => null,
         'collapsible' => ['label' => 'Archived Shows ({count})'],
         'hideWhenEmpty' => true,
-        'note' => 'Shows that ended before this year. They no longer appear on the public /shows/ page, whatever their Published status was left as.',
         'columns' => $showColumns('archivedBadge', 'Status'),
         'actions' => [
             ['label' => 'Edit', 'icon' => 'bx-edit-alt', 'event' => 'edit'],
