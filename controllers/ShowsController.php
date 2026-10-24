@@ -50,8 +50,12 @@ class ShowsController extends AdminController
             }
         }
 
+        $this->data['admin']['isAdmin'] = $this->isAdmin();
+        $this->data['admin']['lists'] = require __DIR__ . '/../lists/shows.php';
         $this->data['admin']['shows'] = \array_map($this->formatShow(...), $currentShows);
         $this->data['admin']['archivedShows'] = \array_map($this->formatShow(...), $archivedShows);
+        $this->data['admin']['recentShows'] = \array_map($this->formatRecentShow(...), $model->listRecent());
+        $this->data['admin']['deletedShows'] = \array_map($this->formatDeletedShow(...), $model->listDeleted());
         $this->data['admin']['venues'] = $this->distinctVenues($shows);
         $this->data['admin']['showNames'] = $this->distinctShowNames($shows);
 
@@ -73,7 +77,7 @@ class ShowsController extends AdminController
         $csrfValid = $this->admin->auth->validateCsrfJson($input);
         if (!$csrfValid) $this->admin->jsonError('Invalid request token. Please refresh and try again.');
 
-        $needsId = $action !== 'create';
+        $needsId = !\in_array($action, ['create', 'purge_deleted'], true);
         $missingParams = !$action || ($needsId && !$id);
         if ($missingParams) $this->admin->jsonError('Missing parameters');
 
@@ -81,9 +85,13 @@ class ShowsController extends AdminController
             $result = match ($action) {
                 'create' => $this->createShow($input),
                 'update' => $this->updateShow(id: $id, input: $input),
-                'toggle_published' => $this->togglePublished(id: $id, input: $input),
+                'publish' => $this->setPublished(id: $id, isPublished: true),
+                'unpublish' => $this->setPublished(id: $id, isPublished: false),
                 'upload_image' => $this->uploadShowImage(id: $id, file: $_FILES['image'] ?? []),
                 'delete' => $this->deleteShow($id),
+                'restore' => $this->restoreShow($id),
+                'permanently_delete' => $this->permanentlyDelete($id),
+                'purge_deleted' => $this->purgeDeleted(),
                 default => throw new \InvalidArgumentException('Unknown action'),
             };
 
@@ -153,17 +161,15 @@ class ShowsController extends AdminController
         return ['success' => true, 'id' => $id];
     }
 
-    private function togglePublished(int $id, array $input): array
+    private function setPublished(int $id, bool $isPublished): array
     {
         $model = new Show(database: $this->osmium->dataSource);
         $show = $model->getById($id);
         if (!$show) throw new \InvalidArgumentException('Show not found');
 
-        $isPublished = !empty($input['is_published']);
         $model->updatePublished(id: $id, isPublished: $isPublished);
 
-        $action = $isPublished ? 'Published' : 'Hidden';
-        $this->logChange(action: $action, id: $id, name: $show['name']);
+        $this->logChange(action: $isPublished ? 'Published' : 'Hidden', id: $id, name: $show['name']);
 
         return ['success' => true, 'id' => $id, 'is_published' => $isPublished];
     }
@@ -179,6 +185,46 @@ class ShowsController extends AdminController
         $this->logChange(action: 'Deleted', id: $id, name: $show['name']);
 
         return ['success' => true, 'id' => $id];
+    }
+
+    private function restoreShow(int $id): array
+    {
+        $model = new Show(database: $this->osmium->dataSource);
+        $show = $model->getAnyById($id);
+        if (!$show) throw new \InvalidArgumentException('Show not found');
+
+        $model->restore($id);
+
+        $this->logChange(action: 'Restored', id: $id, name: $show['name']);
+
+        return ['success' => true, 'id' => $id];
+    }
+
+    private function permanentlyDelete(int $id): array
+    {
+        $notAdmin = !$this->isAdmin();
+        if ($notAdmin) throw new \Exception('Unauthorized');
+
+        $model = new Show(database: $this->osmium->dataSource);
+        $show = $model->getAnyById($id);
+        if (!$show) throw new \InvalidArgumentException('Show not found');
+
+        $this->logChange(action: 'Permanently deleted', id: $id, name: $show['name']);
+        $model->hardDelete($id);
+
+        return ['success' => true, 'id' => $id];
+    }
+
+    private function purgeDeleted(): array
+    {
+        $notAdmin = !$this->isAdmin();
+        if ($notAdmin) throw new \Exception('Unauthorized');
+
+        $model = new Show(database: $this->osmium->dataSource);
+        $count = $model->purgeDeleted();
+        $this->admin->model->changelog->log(description: "Purged {$count} deleted show(s)", recordType: self::RECORD_TYPE, recordId: 0);
+
+        return ['success' => true, 'count' => $count];
     }
 
     /**
@@ -310,7 +356,53 @@ class ShowsController extends AdminController
             'imageUrl' => $hasImage
                 ? $this->osmium->imagePath(self::IMAGE_PATH_PREFIX . $row['image_filename'])
                 : null,
+            'locationHtml' => $this->locationHtml($row),
+            'publishedBadge' => (bool) $row['is_published']
+                ? '<span class="badge bg-label-success">Live</span>'
+                : '<span class="badge bg-label-secondary">Hidden</span>',
+            'archivedBadge' => '<span class="badge bg-label-secondary" title="No longer shown on the public page, regardless of Published status">Archived</span>',
         ];
+    }
+
+    private function formatRecentShow(array $row): array
+    {
+        $changed = \max((string) ($row['updated_at'] ?? ''), (string) ($row['deleted_at'] ?? ''), (string) $row['created_at']);
+
+        return [
+            'id' => (int) $row['id'],
+            'deleted_at' => $row['deleted_at'] ?? null,
+            'name' => $row['name'],
+            'updatedDate' => \date('j M Y, g:ia', \strtotime($changed)),
+            'changed_by' => $row['changed_by'] ?? null,
+            'changed_by_avatar' => $row['changed_by_avatar'] ?? null,
+        ];
+    }
+
+    private function formatDeletedShow(array $row): array
+    {
+        return [
+            'id' => (int) $row['id'],
+            'name' => $row['name'],
+            'dateRange' => $this->formatDateRange($row['start_date'], $row['end_date']),
+            'deletedDate' => \date('d M Y', \strtotime((string) $row['deleted_at'])),
+            'changed_by' => $row['changed_by'] ?? null,
+            'changed_by_avatar' => $row['changed_by_avatar'] ?? null,
+        ];
+    }
+
+    private function locationHtml(array $row): string
+    {
+        $html = \htmlspecialchars((string) ($row['location'] ?? ''));
+        $postcode = (string) ($row['postcode'] ?? '');
+        if ($postcode === '') return $html;
+
+        $html .= '<br><span class="small text-muted">' . \htmlspecialchars($postcode) . '</span>';
+        $geocodeFailed = $row['latitude'] === null;
+        if ($geocodeFailed) {
+            $html .= '<br><span class="small text-danger"><i class="bx bx-error-circle"></i> Postcode not found - no map pin</span>';
+        }
+
+        return $html;
     }
 
     private function formatDateRange(string $startDate, string $endDate): string

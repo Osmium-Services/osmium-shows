@@ -123,47 +123,6 @@
         }
     }
 
-    async function handleTogglePublished(button) {
-        button.disabled = true;
-
-        try {
-            const result = await postJson({
-                action: 'toggle_published',
-                id: button.dataset.id,
-                is_published: button.dataset.published !== '1'
-            });
-
-            if (result.success) {
-                window.location.reload();
-                return;
-            }
-
-            window.adminAlert(result.error || 'Failed to change visibility', 'danger');
-        } catch (error) {
-            window.adminAlert('An error occurred while changing visibility', 'danger');
-        } finally {
-            button.disabled = false;
-        }
-    }
-
-    async function handleDelete(id, name) {
-        const confirmed = await window.adminConfirm('Delete "' + name + '"? It will be removed from the public shows page.');
-        if (!confirmed) return;
-
-        try {
-            const result = await postJson({ action: 'delete', id: id });
-
-            if (result.success) {
-                window.location.reload();
-                return;
-            }
-
-            window.adminAlert(result.error || 'Failed to delete', 'danger');
-        } catch (error) {
-            window.adminAlert('An error occurred while deleting', 'danger');
-        }
-    }
-
     function handleStartDateChange(e) {
         const endDate = document.getElementById('showEndDate');
         if (!endDate.value) endDate.value = e.target.value;
@@ -179,24 +138,10 @@
             openModal(null);
         });
 
-        document.querySelectorAll('.edit-show').forEach(function (link) {
-            link.addEventListener('click', function (e) {
-                e.preventDefault();
-                openModal(JSON.parse(link.dataset.show));
-            });
-        });
-
-        document.querySelectorAll('.delete-show').forEach(function (link) {
-            link.addEventListener('click', function (e) {
-                e.preventDefault();
-                handleDelete(link.dataset.id, link.dataset.name);
-            });
-        });
-
-        document.querySelectorAll('.toggle-published').forEach(function (button) {
-            button.addEventListener('click', function () {
-                handleTogglePublished(button);
-            });
+        // Row actions come from the ListView; Edit fires list:action with the row's id
+        document.addEventListener('list:action', function (e) {
+            if (e.detail.action !== 'edit') return;
+            openModal(config.shows[e.detail.id]);
         });
 
         document.getElementById('showForm').addEventListener('submit', handleSubmit);

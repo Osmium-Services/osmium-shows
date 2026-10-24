@@ -1,194 +1,28 @@
+<?php
+
+use Osmium\Modules\Admin\Core\ListView;
+
+$listContext = [
+    'adminUrl' => $adminUrl,
+    'isAdmin' => $admin['isAdmin'],
+    'editors' => [],
+    'avatarUrl' => $admin['avatarUrl'] ?? '',
+];
+$showsById = \array_column(\array_merge($admin['shows'], $admin['archivedShows']), null, 'id');
+?>
 <div class="d-flex justify-content-between align-items-center py-3 mb-4">
     <h4 class="mb-0">
-        <span class="text-muted fw-light">Content /</span> Shows
+        Shows
     </h4>
     <button type="button" class="btn btn-primary" id="addShowButton">
         <i class="bx bx-plus me-1"></i> Add Show
     </button>
 </div>
 
-<div class="card mb-4">
-    <div class="card-header">
-        <h5 class="mb-0">Shows</h5>
-        <span class="badge bg-label-info"><?= \count($admin['shows']) ?> shows</span>
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-striped table-hover">
-                <thead>
-                    <tr>
-                        <th style="width: 90px;">Logo</th>
-                        <th>Show</th>
-                        <th>Dates</th>
-                        <th>Location</th>
-                        <th style="width: 100px;">Published</th>
-                        <th style="width: 110px;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (empty($admin['shows'])): ?>
-                        <tr>
-                            <td colspan="6" class="text-center text-muted py-4">
-                                No shows yet - use Add Show to create one.
-                            </td>
-                        </tr>
-                    <?php else: ?>
-                        <?php foreach ($admin['shows'] as $show): ?>
-                            <tr>
-                                <td>
-                                    <?php if ($show['hasImage']): ?>
-                                        <img src="<?= $show['imageUrl'] ?>" alt=""
-                                            style="height: 34px; width: 60px; object-fit: contain;">
-                                    <?php else: ?>
-                                        <span class="text-muted small">-</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <strong><?= \htmlspecialchars($show['name']) ?></strong>
-                                    <?php if ($show['linkUrl']): ?>
-                                        <br>
-                                        <a href="<?= \htmlspecialchars($show['linkUrl']) ?>" target="_blank"
-                                            rel="noopener noreferrer" class="small text-muted">
-                                            <?= \htmlspecialchars($show['linkUrl']) ?>
-                                        </a>
-                                    <?php endif; ?>
-                                </td>
-                                <td><?= \htmlspecialchars($show['dateRange']) ?></td>
-                                <td>
-                                    <?= \htmlspecialchars($show['location']) ?>
-                                    <?php if ($show['postcode']): ?>
-                                        <br><span class="small text-muted"><?= \htmlspecialchars($show['postcode']) ?></span>
-                                        <?php if ($show['geocodeFailed']): ?>
-                                            <br><span class="small text-danger">
-                                                <i class="bx bx-error-circle"></i> Postcode not found - no map pin
-                                            </span>
-                                        <?php endif; ?>
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <button type="button"
-                                        class="badge border-0 toggle-published <?= $show['isPublished'] ? 'bg-label-success' : 'bg-label-secondary' ?>"
-                                        data-id="<?= $show['id'] ?>"
-                                        data-published="<?= $show['isPublished'] ? '1' : '0' ?>"
-                                        title="Click to toggle">
-                                        <?= $show['isPublished'] ? 'Live' : 'Hidden' ?>
-                                    </button>
-                                </td>
-                                <td class="actions-cell">
-                                    <div class="dropdown actions-dropdown">
-                                        <button type="button" class="btn btn-sm btn-icon dropdown-toggle hide-arrow d-flex justify-content-center" data-bs-toggle="dropdown">
-                                            <i class="bx bx-slider" style="font-size: 1.25rem;"></i>
-                                        </button>
-                                        <div class="dropdown-menu">
-                                            <a class="dropdown-item edit-show" href="#"
-                                                data-show='<?= \htmlspecialchars(\json_encode($show), ENT_QUOTES) ?>'>
-                                                <i class="bx bx-edit-alt me-1"></i> Edit
-                                            </a>
-                                            <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item text-danger delete-show" href="#"
-                                                data-id="<?= $show['id'] ?>"
-                                                data-name="<?= \htmlspecialchars($show['name']) ?>">
-                                                <i class="bx bx-trash me-1"></i> Delete
-                                            </a>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<?php if (!empty($admin['archivedShows'])): ?>
-    <div class="mb-4">
-        <div class="d-flex align-items-center gap-2 mb-2" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#archivedShowsCard">
-            <i class="bx bx-chevron-down"></i>
-            <span class="text-muted"><i class="bx bx-archive me-1"></i>Archived Shows (<?= \count($admin['archivedShows']) ?>)</span>
-        </div>
-        <div class="collapse" id="archivedShowsCard">
-            <div class="card">
-                <div class="card-body">
-                    <p class="text-muted small mb-3">
-                        Shows that ended before this year. They no longer appear on the
-                        public /shows/ page, whatever their Published status was left as.
-                    </p>
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover">
-                            <thead>
-                                <tr>
-                                    <th style="width: 90px;">Logo</th>
-                                    <th>Show</th>
-                                    <th>Dates</th>
-                                    <th>Location</th>
-                                    <th style="width: 100px;">Status</th>
-                                    <th style="width: 110px;">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($admin['archivedShows'] as $show): ?>
-                                    <tr>
-                                        <td>
-                                            <?php if ($show['hasImage']): ?>
-                                                <img src="<?= $show['imageUrl'] ?>" alt=""
-                                                    style="height: 34px; width: 60px; object-fit: contain;">
-                                            <?php else: ?>
-                                                <span class="text-muted small">-</span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td>
-                                            <strong><?= \htmlspecialchars($show['name']) ?></strong>
-                                            <?php if ($show['linkUrl']): ?>
-                                                <br>
-                                                <a href="<?= \htmlspecialchars($show['linkUrl']) ?>" target="_blank"
-                                                    rel="noopener noreferrer" class="small text-muted">
-                                                    <?= \htmlspecialchars($show['linkUrl']) ?>
-                                                </a>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td><?= \htmlspecialchars($show['dateRange']) ?></td>
-                                        <td>
-                                            <?= \htmlspecialchars($show['location']) ?>
-                                            <?php if ($show['postcode']): ?>
-                                                <br><span class="small text-muted"><?= \htmlspecialchars($show['postcode']) ?></span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td>
-                                            <span class="badge border-0 bg-label-secondary" title="No longer shown on the public page, regardless of Published status">
-                                                Archived
-                                            </span>
-                                        </td>
-                                        <td class="actions-cell">
-                                            <div class="dropdown actions-dropdown">
-                                                <button type="button" class="btn btn-sm btn-icon dropdown-toggle hide-arrow d-flex justify-content-center" data-bs-toggle="dropdown">
-                                                    <i class="bx bx-slider" style="font-size: 1.25rem;"></i>
-                                                </button>
-                                                <div class="dropdown-menu">
-                                                    <a class="dropdown-item edit-show" href="#"
-                                                        data-show='<?= \htmlspecialchars(\json_encode($show), ENT_QUOTES) ?>'>
-                                                        <i class="bx bx-edit-alt me-1"></i> Edit
-                                                    </a>
-                                                    <div class="dropdown-divider"></div>
-                                                    <a class="dropdown-item text-danger delete-show" href="#"
-                                                        data-id="<?= $show['id'] ?>"
-                                                        data-name="<?= \htmlspecialchars($show['name']) ?>">
-                                                        <i class="bx bx-trash me-1"></i> Delete
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-<?php endif; ?>
+<?= ListView::render($admin['lists']['active'], $admin['shows'], $listContext) ?>
+<?= ListView::render($admin['lists']['archived'], $admin['archivedShows'], $listContext) ?>
+<?= ListView::render($admin['lists']['recent'], $admin['recentShows'], $listContext) ?>
+<?= ListView::render($admin['lists']['deleted'], $admin['deletedShows'], $listContext) ?>
 
 <div class="modal fade" id="showModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
@@ -280,7 +114,9 @@
 <script nonce="<?= $cspNonce ?? '' ?>">
     window.ShowsConfig = {
         basePath: adminBasePath,
-        venuePostcodes: <?= \json_encode($admin['venues']) ?>
+        venuePostcodes: <?= \json_encode($admin['venues']) ?>,
+        shows: <?= \json_encode($showsById, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
     };
 </script>
+<script src="/assets/admin/js/list-view.js<?= $adminAssetVersion('/assets/admin/js/list-view.js') ?>"></script>
 <script src="/assets/services/osmium-shows/shows.js<?= $adminAssetVersion('/assets/services/osmium-shows/shows.js') ?>"></script>

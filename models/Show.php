@@ -157,6 +157,60 @@ class Show extends Model
         $this->database->execute();
     }
 
+    /**
+     * Like getById() but also finds soft-deleted shows, for restore and permanent delete
+     */
+    public function getAnyById(int $id): ?array
+    {
+        $this->database->query($this->loadSqlFile('show-get-any.sql'));
+        $this->database->bind(param: ':id', value: $id);
+        $result = $this->database->single();
+
+        return $result ?: null;
+    }
+
+    /**
+     * Created, changed or deleted in the last 24 hours, newest first, capped at 10
+     */
+    public function listRecent(): array
+    {
+        $this->database->query($this->loadSqlFile('show-list-recent.sql'));
+
+        return $this->database->resultset();
+    }
+
+    public function listDeleted(): array
+    {
+        $this->database->query($this->loadSqlFile('show-list-deleted.sql'));
+
+        return $this->database->resultset();
+    }
+
+    public function restore(int $id): void
+    {
+        $this->database->query($this->loadSqlFile('show-restore.sql'));
+        $this->database->bind(param: ':id', value: $id);
+        $this->database->execute();
+    }
+
+    public function hardDelete(int $id): void
+    {
+        $this->database->query($this->loadSqlFile('show-hard-delete.sql'));
+        $this->database->bind(param: ':id', value: $id);
+        $this->database->execute();
+    }
+
+    /**
+     * @return int How many shows were removed
+     */
+    public function purgeDeleted(): int
+    {
+        $this->database->query($this->loadSqlFile('show-purge-deleted.sql'));
+        $this->database->execute();
+
+        return $this->database->rowCount();
+    }
+
     private function bindDetails(
         string $name,
         string $startDate,
