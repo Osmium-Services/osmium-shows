@@ -27,7 +27,6 @@ return [
         'noun' => ['show', 'shows'],
         'endpoint' => 'shows/action/',
         'emptyText' => 'No shows yet - use Add Show to create one.',
-        'datatable' => false,
         'order' => null, // Server order: newest start date first
         'columns' => $showColumns('publishedBadge', 'Published'),
         'actions' => [
@@ -60,7 +59,6 @@ return [
         'noun' => ['show', 'shows'],
         'icon' => 'bx-archive',
         'endpoint' => 'shows/action/',
-        'datatable' => false,
         'order' => null,
         'collapsible' => ['label' => 'Archived Shows ({count})'],
         'hideWhenEmpty' => true,
@@ -84,7 +82,6 @@ return [
         'icon' => 'bx-time-five',
         'rowClass' => static fn(array $row): string => empty($row['deleted_at']) ? '' : 'table-danger',
         'endpoint' => 'shows/action/',
-        'datatable' => false,
         'collapsible' => ['label' => 'Recent Changes ({count})'],
         'hideWhenEmpty' => false,
         'columns' => [
