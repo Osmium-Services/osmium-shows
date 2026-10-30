@@ -28,6 +28,7 @@ return [
         'endpoint' => 'shows/action/',
         'emptyText' => 'No shows yet - use Add Show to create one.',
         'order' => null, // Server order: newest start date first
+        'grid' => require __DIR__ . '/../grids/shows.php',
         'columns' => $showColumns('publishedBadge', 'Published'),
         'actions' => [
             ['label' => 'Edit', 'icon' => 'bx-edit-alt', 'event' => 'edit'],
