@@ -18,7 +18,6 @@ return [
     ],
     'meta' => [
         ['key' => 'dateRange', 'type' => 'text', 'small' => true],
-        ['key' => 'locationHtml', 'type' => 'raw'],
         ['key' => 'publishedBadge', 'type' => 'raw'],
     ],
     'actionsAt' => 'bottom-end',

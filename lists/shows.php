@@ -13,10 +13,10 @@ require_once 'app/core/admin/services/ChangedByCell.php';
 $changedByColumn = ['key' => 'changed_by', 'label' => '', 'type' => 'html', 'sortable' => false, 'render' => fn(array $row, array $context): string => \Osmium\Modules\Admin\Services\ChangedByCell::html($row, (string)($context['avatarUrl'] ?? ''))];
 
 $showColumns = static fn(string $statusKey, string $statusLabel): array => [
-    ['key' => 'imageUrl', 'label' => 'Logo', 'type' => 'image', 'altKey' => 'name', 'sortable' => false],
+    ['key' => 'imageUrl', 'label' => 'Logo', 'type' => 'image', 'altKey' => 'name', 'sortable' => false, 'hideBelow' => 'md'],
     ['key' => 'name', 'label' => 'Show', 'type' => 'text', 'strong' => true, 'fill' => true, 'sub' => ['key' => 'linkUrl', 'style' => 'link', 'href' => '{linkUrl}']],
     ['key' => 'dateRange', 'label' => 'Dates', 'type' => 'text', 'nowrap' => true, 'sortKey' => 'startDate'],
-    ['key' => 'locationHtml', 'label' => 'Location', 'type' => 'raw'],
+    ['key' => 'locationHtml', 'label' => 'Location', 'type' => 'raw', 'hideBelow' => 'md'],
     ['key' => $statusKey, 'label' => $statusLabel, 'type' => 'raw'],
 ];
 
