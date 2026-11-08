@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Osmium\Services\Shows\Controllers;
 
+use Osmium\Core\Library\ImageTools;
 use Osmium\Modules\Admin\Core\AdminController;
 use Osmium\Services\Shows\Models\Show;
 use Osmium\Services\Geocoder\Models\PostcodeGeocoder;
@@ -289,7 +290,7 @@ class ShowsController extends AdminController
         $basename = 'show_' . $id . '_' . \time();
         $imageDir = $_SERVER['DOCUMENT_ROOT'] . self::IMAGE_ASSET_DIR;
 
-        $destImage = $this->resizeLogo(sourcePath: $file['tmp_name'], mimeType: $mimeType);
+        $destImage = $this->resizeLogo($file['tmp_name']);
         $this->saveImageFormats(sourceImage: $destImage, baseDir: $imageDir, filename: $basename);
 
         $model->updateImage(id: $id, imageFilename: $basename);
@@ -440,51 +441,13 @@ class ShowsController extends AdminController
      * trimmed first, otherwise it counts towards LOGO_MAX_DIMENSION and the
      * logo mark itself ends up rendering small on the page.
      */
-    private function resizeLogo(string $sourcePath, string $mimeType): \GdImage
+    private function resizeLogo(string $sourcePath): \GdImage
     {
-        $decoderFunction = match ($mimeType) {
-            'image/jpeg' => 'imagecreatefromjpeg',
-            'image/png' => 'imagecreatefrompng',
-            'image/gif' => 'imagecreatefromgif',
-            'image/webp' => 'imagecreatefromwebp',
-            'image/avif' => 'imagecreatefromavif',
-            default => null,
-        };
-
-        $unsupportedFormat = $decoderFunction === null || !\function_exists($decoderFunction);
-        if ($unsupportedFormat) {
-            throw new \Exception("This server can't process {$mimeType} images. Try JPG or PNG instead.");
-        }
-
-        $sourceImage = $decoderFunction($sourcePath);
-        if (!$sourceImage) throw new \Exception('Failed to process image');
-
+        $tools = new ImageTools();
+        $sourceImage = $tools->load(path: $sourcePath, allowedTypes: self::ALLOWED_IMAGE_TYPES);
         $sourceImage = $this->cropToContent($sourceImage);
 
-        $origWidth = \imagesx($sourceImage);
-        $origHeight = \imagesy($sourceImage);
-        $scale = \min(1, self::LOGO_MAX_DIMENSION / \max($origWidth, $origHeight));
-        $destWidth = (int) \round($origWidth * $scale);
-        $destHeight = (int) \round($origHeight * $scale);
-
-        $destImage = \imagecreatetruecolor(width: $destWidth, height: $destHeight);
-        \imagealphablending(image: $destImage, enable: false);
-        \imagesavealpha(image: $destImage, enable: true);
-
-        \imagecopyresampled(
-            dst_image: $destImage,
-            src_image: $sourceImage,
-            dst_x: 0,
-            dst_y: 0,
-            src_x: 0,
-            src_y: 0,
-            dst_width: $destWidth,
-            dst_height: $destHeight,
-            src_width: $origWidth,
-            src_height: $origHeight,
-        );
-
-        return $destImage;
+        return $tools->fit(image: $sourceImage, maxSide: self::LOGO_MAX_DIMENSION);
     }
 
     /**
