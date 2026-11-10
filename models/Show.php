@@ -140,7 +140,7 @@ class Show extends Model
      * Update the logo filename. Separate from update() so saving the details
      * form never clears an image, and an upload never rewrites the details.
      */
-    public function updateImage(int $id, string $imageFilename): void
+    public function updateImage(int $id, ?string $imageFilename): void
     {
         $sql = $this->loadSqlFile('show-update-image.sql');
         $this->database->query($sql);

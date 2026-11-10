@@ -84,9 +84,19 @@ $showsById = \array_column(\array_merge($admin['shows'], $admin['archivedShows']
                     </div>
 
                     <div class="mb-3" id="showImageRow">
-                        <label class="form-label" for="showImageFile">Show logo</label>
-                        <div id="showImagePreview" class="mb-2"></div>
-                        <input type="file" class="form-control" id="showImageFile" accept="image/*">
+                        <label class="form-label">Show logo</label>
+                        <div class="show-logo-zone" id="showLogoZone">
+                            <button type="button" class="btn btn-sm btn-icon btn-danger show-logo-remove d-none" title="Remove logo">
+                                <i class="bx bx-trash"></i>
+                            </button>
+                            <div class="show-logo-empty">
+                                <i class="bx bx-cloud-upload"></i>
+                                <p class="mb-1 mt-2 fw-medium">Drag &amp; drop or click to upload</p>
+                                <small class="text-muted">JPG, PNG, GIF, WebP or AVIF</small>
+                            </div>
+                            <img src="" alt="" class="show-logo-preview d-none">
+                        </div>
+                        <input type="file" class="d-none" id="showImageFile" accept="image/jpeg,image/png,image/gif,image/webp,image/avif">
                         <div class="form-text">
                             Uploads immediately and replaces any existing logo. Surrounding
                             whitespace is trimmed and even padding added automatically.
@@ -118,5 +128,6 @@ $showsById = \array_column(\array_merge($admin['shows'], $admin['archivedShows']
         shows: <?= \json_encode($showsById, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
     };
 </script>
+<link rel="stylesheet" href="/assets/services/osmium-shows/shows.css<?= $adminAssetVersion('/assets/services/osmium-shows/shows.css') ?>">
 <script src="/assets/admin/js/list-view.js<?= $adminAssetVersion('/assets/admin/js/list-view.js') ?>"></script>
 <script src="/assets/services/osmium-shows/shows.js<?= $adminAssetVersion('/assets/services/osmium-shows/shows.js') ?>"></script>

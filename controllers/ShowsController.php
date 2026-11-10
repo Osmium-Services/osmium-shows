@@ -89,6 +89,7 @@ class ShowsController extends AdminController
                 'publish' => $this->setPublished(id: $id, isPublished: true),
                 'unpublish' => $this->setPublished(id: $id, isPublished: false),
                 'upload_image' => $this->uploadShowImage(id: $id, file: $_FILES['image'] ?? []),
+                'remove_image' => $this->removeShowImage($id),
                 'delete' => $this->deleteShow($id),
                 'restore' => $this->restoreShow($id),
                 'permanently_delete' => $this->permanentlyDelete($id),
@@ -263,6 +264,31 @@ class ShowsController extends AdminController
             'linkUrl' => $linkUrl !== '' ? $linkUrl : null,
             'isPublished' => !empty($input['is_published']),
         ];
+    }
+
+    /**
+     * Remove a show's logo: clear it on the show and delete its PNG, WebP and AVIF files.
+     */
+    private function removeShowImage(int $id): array
+    {
+        $model = new Show(database: $this->osmium->dataSource);
+        $show = $model->getById($id);
+        if (!$show) throw new \InvalidArgumentException('Show not found');
+
+        $basename = \basename((string) ($show['image_filename'] ?? ''));
+        $model->updateImage(id: $id, imageFilename: null);
+
+        $hasFiles = $basename !== '';
+        if ($hasFiles) {
+            $imageDir = $_SERVER['DOCUMENT_ROOT'] . self::IMAGE_ASSET_DIR;
+            foreach ([$imageDir . $basename . '.png', $imageDir . 'webp/' . $basename . '.webp', $imageDir . 'avif/' . $basename . '.avif'] as $path) {
+                if (\file_exists($path)) \unlink($path);
+            }
+        }
+
+        $this->logChange(action: 'Removed logo of', id: $id, name: $show['name']);
+
+        return ['success' => true, 'id' => $id];
     }
 
     /**
