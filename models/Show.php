@@ -14,6 +14,20 @@ class Show extends Model
 {
     protected ?string $sqlDir = __DIR__ . '/sql';
 
+    private static bool $publicListShown = false;
+
+    /** Whether this request asked for the public lists (upcoming or past), which is how a theme shows the shows page. */
+    public static function publicListWasShown(): bool
+    {
+        return self::$publicListShown;
+    }
+
+    /** For tests: forget that a public list was asked for. */
+    public static function forgetShown(): void
+    {
+        self::$publicListShown = false;
+    }
+
     public function __construct(OsmiumPDO $database)
     {
         parent::__construct(database: $database, tableName: 'shows');
@@ -24,6 +38,7 @@ class Show extends Model
      */
     public function listUpcoming(): array
     {
+        self::$publicListShown = true; // For the staff bar's "Shows" icon
         $sql = $this->loadSqlFile('show-list-upcoming.sql');
         $this->database->query($sql);
         $this->database->bind(param: ':today', value: \date('Y-m-d'));
@@ -36,6 +51,7 @@ class Show extends Model
      */
     public function listPast(string $since): array
     {
+        self::$publicListShown = true;
         $sql = $this->loadSqlFile('show-list-past.sql');
         $this->database->query($sql);
         $this->database->bind(param: ':today', value: \date('Y-m-d'));

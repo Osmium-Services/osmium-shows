@@ -19,6 +19,15 @@
         "models"
     ],
 
+    "hooks": {
+        "adminbar.context": [
+            "Osmium\\Services\\Shows\\Models\\ShowsAdminBar::context"
+        ],
+        "adminbar.links": [
+            "Osmium\\Services\\Shows\\Models\\ShowsAdminBar::links"
+        ]
+    },
+
     "migrations": "migrations/",
 
     "admin": {
