@@ -39,7 +39,7 @@ final class ShowsAdminBarTest extends TestCase
         $links = ShowsAdminBar::links(['context' => 'shows:all']);
 
         $this->assertSame('shows/', $links[0]['path']);
-        $this->assertSame('Shows', $links[0]['label']);
+        $this->assertSame('Edit shows', $links[0]['label']);
         $this->assertSame('bx-calendar-event', $links[0]['icon']);
         $this->assertTrue($links[0]['primary']);
         $this->assertArrayNotHasKey('order', $links[0]); // The page's main content: the default order

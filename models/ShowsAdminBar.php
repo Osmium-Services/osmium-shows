@@ -31,6 +31,6 @@ class ShowsAdminBar
         $isContext = ($payload['context'] ?? '') === 'shows:all';
         if (!$isContext) return null;
 
-        return [['label' => 'Shows', 'icon' => 'bx-calendar-event', 'path' => 'shows/', 'primary' => true]];
+        return [['label' => 'Edit shows', 'icon' => 'bx-calendar-event', 'path' => 'shows/', 'primary' => true]];
     }
 }
