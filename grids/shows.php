@@ -39,7 +39,7 @@ return [
             'label' => 'Delete',
             'icon' => 'bx-trash',
             'action' => 'delete',
-            'confirm' => 'Delete this show? It will be removed from the public shows page, and can be restored from Deleted Shows.',
+            'confirm' => 'Delete this show? It can be restored from Deleted Shows.',
             'danger' => true,
         ],
     ],

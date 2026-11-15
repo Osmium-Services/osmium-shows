@@ -387,7 +387,7 @@ class ShowsController extends AdminController
             'publishedBadge' => (bool) $row['is_published']
                 ? '<span class="badge bg-label-success">Live</span>'
                 : '<span class="badge bg-label-secondary">Hidden</span>',
-            'archivedBadge' => '<span class="badge bg-label-secondary" title="No longer shown on the public page, regardless of Published status">Archived</span>',
+            'archivedBadge' => '<span class="badge bg-label-secondary" title="Past show, no longer listed, regardless of Published status">Archived</span>',
         ];
     }
 
