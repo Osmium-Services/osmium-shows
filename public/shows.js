@@ -3,6 +3,7 @@
 
     const config = window.ShowsConfig || {};
     const actionUrl = config.basePath + 'shows/action/';
+    let presence = null;
     const venuePostcodes = config.venuePostcodes || {};
 
     function escapeHtml(text) {
@@ -56,6 +57,7 @@
         showLogo(isEdit && show.hasImage ? show.imageUrl : '');
 
         new bootstrap.Modal(document.getElementById('showModal')).show();
+        presence.open(isEdit ? show.id : null);
     }
 
     async function handleSubmit(e) {
@@ -201,6 +203,7 @@
             openModal(config.shows[e.detail.id]);
         });
 
+        presence = initModalPresence(actionUrl, '#showModal');
         document.getElementById('showForm').addEventListener('submit', handleSubmit);
         document.getElementById('showImageFile').addEventListener('change', handleImageChange);
         initLogoZone();

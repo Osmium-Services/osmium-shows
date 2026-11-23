@@ -53,6 +53,7 @@ class ShowsController extends AdminController
 
         $this->data['admin']['isAdmin'] = $this->isAdmin();
         $this->data['admin']['lists'] = require __DIR__ . '/../lists/shows.php';
+        $this->data['admin']['activeEditors'] = $this->activeEditors(self::RECORD_TYPE);
         $this->data['admin']['shows'] = \array_map($this->formatShow(...), $currentShows);
         $this->data['admin']['archivedShows'] = \array_map($this->formatShow(...), $archivedShows);
         $this->data['admin']['recentShows'] = \array_map($this->formatRecentShow(...), $model->listRecent());
@@ -74,6 +75,8 @@ class ShowsController extends AdminController
         $input = $this->admin->auth->getJsonInput();
         $action = $input['action'] ?? '';
         $id = (int) ($input['id'] ?? 0);
+
+        $this->handlePresence(action: $action, input: $input, recordType: self::RECORD_TYPE);
 
         $csrfValid = $this->admin->auth->validateCsrfJson($input);
         if (!$csrfValid) $this->admin->jsonError('Invalid request token. Please refresh and try again.');

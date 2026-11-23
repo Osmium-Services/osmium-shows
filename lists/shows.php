@@ -26,6 +26,7 @@ return [
         'title' => 'Shows',
         'noun' => ['show', 'shows'],
         'endpoint' => 'shows/action/',
+        'presence' => 'show',
         'emptyText' => 'No shows yet - use Add Show to create one.',
         'order' => null, // Server order: newest start date first
         'grid' => require __DIR__ . '/../grids/shows.php',
@@ -60,6 +61,7 @@ return [
         'noun' => ['show', 'shows'],
         'icon' => 'bx-archive',
         'endpoint' => 'shows/action/',
+        'presence' => 'show',
         'order' => null,
         'collapsible' => ['label' => 'Archived Shows ({count})'],
         'hideWhenEmpty' => true,
