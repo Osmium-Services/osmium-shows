@@ -1,6 +1,7 @@
 ---
 title: Add a trade show or event
 tags: shows, events, trade show, date, venue, postcode, map, logo, archive
+page: admin/shows
 ---
 
 **Osmium Events/Shows** lists the shows and events you attend.
